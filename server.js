@@ -25,6 +25,9 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to book directory application." });
 });
 
+require('./src/routes/auth')(app);
+require('./src/routes/user')(app);
+
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
