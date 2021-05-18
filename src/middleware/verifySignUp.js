@@ -33,9 +33,6 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
   });
 };
 
-  next();
-};
-
 const verifySignUp = {
   checkDuplicateUsernameOrEmail: checkDuplicateUsernameOrEmail
 };
