@@ -13,6 +13,10 @@ var corsOptions = {
 const db = require("./src/models");
 
 db.sequelize.sync();
+// on development mode
+// db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and re-sync db.");
+// });
 
 app.use(cors(corsOptions));
 
@@ -21,11 +25,6 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to book directory application." });
-});
 
 require('./src/routes/auth')(app);
 require('./src/routes/user')(app);

@@ -1,5 +1,6 @@
 const db = require("../models");
-const Book = db.book;
+const Book = db.books;
+const User = db.users;
 const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
@@ -19,11 +20,11 @@ exports.create = (req, res) => {
   // Create a book
   const book = {
     title: req.body.title,
-    description: req.body.description,
     author: req.body.author,
     publicationDate: pubDate,
     resume: req.body.abstract,
-    cover: req.body.cover
+    cover: req.body.cover,
+    userId: req.body.userId
   };
 
   // Save Book in the database
@@ -40,10 +41,9 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-  const title = req.query.title;
-  var condition = title ? { title: { [Op.iLike]: `%${title}%` } } : null;
+  const userId = req.params.id;
 
-  Book.findAll({ where: condition })
+  Book.findAll({ where: { userId: userId } })
     .then(data => {
       res.send(data);
     })
