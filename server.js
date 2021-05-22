@@ -22,11 +22,6 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to book directory application." });
-});
-
 require('./src/routes/auth')(app);
 require('./src/routes/user')(app);
 require('./src/routes/book')(app);
