@@ -1,6 +1,5 @@
 const { App } = require("@slack/bolt");
 const AddBook = require("./src/slack-bot/modals/AddBook");
-// const ChangePassword = require("./src/slack-bot/modals/ChangePassword");
 const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
@@ -15,10 +14,7 @@ const app = new App({
 const db = require("./src/models");
 const Book = db.books;
 const User = db.users;
-// db.sequelize.sync();
-db.sequelize.sync({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
-});
+db.sequelize.sync();
 
 app.event('member_joined_channel', async ({ event, client, context }) => {
   try {
@@ -50,8 +46,6 @@ app.command('/credentials', async ({ ack, payload, client }) => {
   await ack();
 
   try {
-    // console.log(payload);
-      // WE ONLY CAN RETRIEVE PASSWORDS CREATED BY US, SORRY, TRY GENERATING A NEW ONE FROM WEB
     const { user_id, user_name } = payload;
     let answer = `Save your credentials in a safe place\n\n *Username:* ${user_name} \n\n *Password:* ${user_id}`;
     const user = await resolveUser(client, user_id);
@@ -116,6 +110,10 @@ app.view('add_book', ({ ack, body, view, context, client }) => {
       };
 
       newBook = await Book.create(book);
+      await client.chat.postMessage({
+        channel: 'C022L77459T',
+        text: "You've added a new book! :smiley:"
+      });
     } catch (error) {
       console.log(error);
     }
