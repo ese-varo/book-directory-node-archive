@@ -1,4 +1,7 @@
 const { App } = require("@slack/bolt");
+const AddBook = require("./src/slack-bot/modals/AddBook");
+const ChangePassword = require("./src/slack-bot/modals/ChangePassword");
+const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
 
@@ -12,109 +15,43 @@ const app = new App({
 const db = require("./src/models");
 const Book = db.books;
 const User = db.users;
-db.sequelize.sync();
+// db.sequelize.sync();
+db.sequelize.sync({ force: true }).then(() => {
+  console.log("Drop and re-sync db.");
+});
 
-// Listen for a slash command invocation
+app.event('member_joined_channel', async ({ event, client, context }) => {
+  try {
+    const result = await client.chat.postMessage({
+      channel: event.channel,
+      text: 'hey budy, welcome!'
+    });
+    resolveUser(client, event.user);
+  } catch (error){
+    console.error(error);
+  }
+});
+
 app.command('/add', async ({ ack, payload, client }) => {
-  // Acknowledge the command request
   await ack();
 
   try {
-    // Call views.open with the built-in client
     const result = await client.views.open({
-      // Pass a valid trigger_id within 3 seconds of receiving it
       trigger_id: payload.trigger_id,
-      // View payload
-      view: {
-        "type": "modal",
-        "callback_id": "add_book",
-        "title": {
-          "type": "plain_text",
-          "text": "Add a new book",
-          "emoji": true
-        },
-        "submit": {
-          "type": "plain_text",
-          "text": "Submit",
-          "emoji": true
-        },
-        "close": {
-          "type": "plain_text",
-          "text": "Cancel",
-          "emoji": true
-        },
-        "blocks": [
-          {
-            "type": "divider"
-          },
-          {
-            "type": "divider"
-          },
-          {
-            "type": "input",
-            "block_id": "title_input",
-            "element": {
-              "type": "plain_text_input",
-              "action_id": "title"
-            },
-            "label": {
-              "type": "plain_text",
-              "text": "Title",
-              "emoji": true
-            }
-          },
-          {
-            "type": "input",
-            "block_id": "author_input",
-            "element": {
-              "type": "plain_text_input",
-              "action_id": "author"
-            },
-            "label": {
-              "type": "plain_text",
-              "text": "Author",
-              "emoji": true
-            }
-          },
-          {
-            "type": "input",
-            "block_id": "date_input",
-            "element": {
-              "type": "datepicker",
-              "initial_date": "1990-04-28",
-              "placeholder": {
-                "type": "plain_text",
-                "text": "Select a date",
-                "emoji": true
-              },
-              "action_id": "publication_date"
-            },
-            "label": {
-              "type": "plain_text",
-              "text": "Publication date",
-              "emoji": true
-            }
-          },
-          {
-            "type": "input",
-            "block_id": "abstract_input",
-            "element": {
-              "type": "plain_text_input",
-              "multiline": true,
-              "action_id": "abstract"
-            },
-            "label": {
-              "type": "plain_text",
-              "text": "Abstract",
-              "emoji": true
-            }
-          }
-        ]
-      }
+      view: AddBook
     });
-    console.log(result);
   }
   catch (error) {
+    console.error(error);
+  }
+});
+
+app.command('/credentials', async ({ ack, payload, client }) => {
+  await ack();
+
+  try {
+    
+  } catch (error) {
     console.error(error);
   }
 });
@@ -122,37 +59,46 @@ app.command('/add', async ({ ack, payload, client }) => {
 app.view('add_book', ({ ack, body, view, context, client }) => {
   ack();
 
-  const title = view['state']['values']['title_input']['title']['value'];
-  const author = view['state']['values']['author_input']['author']['value'];
-  const date = view['state']['values']['date_input']['publication_date']['value'];
-  const resume = view['state']['values']['abstract_input']['abstract']['value'];
-  const userId = body['user']['id']['value'];
-  const book = {
-    title: title,
-    author: author,
-    resume: resume,
-    publicationDate: date,
-    userId: 2
-  };
-
-  let email = '';
   (async () => {
     try {
-      email = await client.users.profile.get({ user: userId });
-      console.log(email.profile.email);
+      const slackUserId = body['user']['id'];
+      const user = await resolveUser(client, slackUserId);
+
+      // WE ONLY CAN RETRIEVE PASSWORDS CREATED BY US, SORRY, TRY GENERATING A NEW ONE FROM WEB
+
+      const userId = user.id;
+      const book = {
+        title: view['state']['values']['title_input']['title']['value'],
+        author: view['state']['values']['author_input']['author']['value'],
+        publicationDate: view['state']['values']['date_input']['publication_date']['selected_date'],
+        resume: view['state']['values']['abstract_input']['abstract']['value'],
+        userId: userId,
+      };
+
       newBook = await Book.create(book);
     } catch (error) {
       console.log(error);
     }
   })();
-
-  // You'll probably want to store these values somewhere
-  console.log(title);
-  console.log(author);
-  console.log(date);
-  console.log(resume);
-  console.log("user id: " + userId);
 });
+
+async function resolveUser(client, slackUserId) {
+  try {
+    const response = await client.users.profile.get({ user: slackUserId });
+    const { profile: { email, real_name } } = response;
+    let user = await User.findOne({ where: { email: email } });
+    if(!user) {
+      user = await User.create({
+        email,
+        username: real_name,
+        password: bcrypt.hashSync(slackUserId, 8)
+      });
+    }
+    return user;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 (async () => {
   try {
@@ -164,3 +110,18 @@ app.view('add_book', ({ ack, body, view, context, client }) => {
     console.error(error);
   }
 })();
+
+// app.command('/changepass', async ({ ack, payload, client }) => {
+//   await ack();
+
+//   try {
+//     const result = await client.views.open({
+//       trigger_id: payload.trigger_id,
+//       view: ChangePassword
+//     });
+//     console.log(result);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// });
+
