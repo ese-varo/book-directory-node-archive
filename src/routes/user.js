@@ -12,9 +12,5 @@ module.exports = function(app) {
 
   app.get("/api/v1/all", controller.allAccess);
 
-  app.get(
-    "/api/v1/directory",
-    [authJwt.verifyToken],
-    controller.bookDirectory
-  );
+  app.get("/api/v1/directory", authJwt.verifyToken, controller.bookDirectory);
 };
