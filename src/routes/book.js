@@ -12,19 +12,19 @@ module.exports = app => {
   });
 
   // Create a new Books
-  router.post("/", [authJwt.verifyToken], books.create);
+  router.post("/", authJwt.verifyToken, books.create);
 
   // Retrieve all user Books
-  router.get("/user/:id", [authJwt.verifyToken], books.findAll);
+  router.get("/user/:id", authJwt.verifyToken, books.findAll);
 
   // Retrieve a single Book with id
-  router.get("/:id", [authJwt.verifyToken], books.findOne);
+  router.get("/:id", authJwt.verifyToken, books.findOne);
 
   // Update a Book with id
-  router.put("/:id", [authJwt.verifyToken], books.update);
+  router.put("/:id", authJwt.verifyToken, books.update);
 
   // Delete a Book with id
-  router.delete("/:id", [authJwt.verifyToken], books.delete);
+  router.delete("/:id", authJwt.verifyToken, books.delete);
 
   app.use('/api/v1/books', router);
 };

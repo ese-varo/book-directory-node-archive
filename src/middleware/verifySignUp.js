@@ -33,8 +33,6 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
   });
 };
 
-const verifySignUp = {
-  checkDuplicateUsernameOrEmail: checkDuplicateUsernameOrEmail
-};
+const verifySignUp = { checkDuplicateUsernameOrEmail };
 
 module.exports = verifySignUp;
