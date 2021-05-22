@@ -1,6 +1,6 @@
 const { App } = require("@slack/bolt");
 const AddBook = require("./src/slack-bot/modals/AddBook");
-const ChangePassword = require("./src/slack-bot/modals/ChangePassword");
+// const ChangePassword = require("./src/slack-bot/modals/ChangePassword");
 const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
@@ -50,7 +50,49 @@ app.command('/credentials', async ({ ack, payload, client }) => {
   await ack();
 
   try {
-    
+    // console.log(payload);
+      // WE ONLY CAN RETRIEVE PASSWORDS CREATED BY US, SORRY, TRY GENERATING A NEW ONE FROM WEB
+    const { user_id, user_name } = payload;
+    let answer = `Save your credentials in a safe place\n\n *Username:* ${user_name} \n\n *Password:* ${user_id}`;
+    const user = await resolveUser(client, user_id);
+    if(!user) {
+      answer = "You don't have an account yet!";
+    } else {
+      const passwordIsValid = bcrypt.compareSync(
+        user_id,
+        user.password
+      );
+      if(!passwordIsValid) answer = "Sorry this time we cannot help!\n\nTry recovering the password from the browser :cry:";
+    }
+
+    const result = await client.views.open({
+      trigger_id: payload.trigger_id,
+      view: {
+        type: "modal",
+        title: {
+          type: "plain_text",
+          text: "Your Credentials",
+          emoji: true
+        },
+        close: {
+          type: "plain_text",
+          text: "Close",
+          emoji: true
+        },
+        blocks: [
+          {
+            type: "divider"
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: answer
+             }
+          }
+        ]
+      }
+    });
   } catch (error) {
     console.error(error);
   }
@@ -63,8 +105,6 @@ app.view('add_book', ({ ack, body, view, context, client }) => {
     try {
       const slackUserId = body['user']['id'];
       const user = await resolveUser(client, slackUserId);
-
-      // WE ONLY CAN RETRIEVE PASSWORDS CREATED BY US, SORRY, TRY GENERATING A NEW ONE FROM WEB
 
       const userId = user.id;
       const book = {
@@ -110,18 +150,4 @@ async function resolveUser(client, slackUserId) {
     console.error(error);
   }
 })();
-
-// app.command('/changepass', async ({ ack, payload, client }) => {
-//   await ack();
-
-//   try {
-//     const result = await client.views.open({
-//       trigger_id: payload.trigger_id,
-//       view: ChangePassword
-//     });
-//     console.log(result);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// });
 
