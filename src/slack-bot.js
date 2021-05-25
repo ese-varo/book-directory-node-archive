@@ -1,20 +1,28 @@
 const { App } = require("@slack/bolt");
-const AddBook = require("./src/slack-bot/modals/AddBook");
+const AddBook = require("./slack-bot/modals/AddBook");
 const bcrypt = require("bcryptjs");
+const { slack: {
+  botToken,
+  signinSecret,
+  appToken
+} } = require("./config");
 
 require("dotenv").config();
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  token: botToken,
+  signingSecret: signingSecret,
   socketMode: true,
-  appToken: process.env.APP_TOKEN
+  appToken: appToken
 });
 
-const db = require("./src/models");
+const db = require("./models");
 const Book = db.books;
 const User = db.users;
-db.sequelize.sync();
+// db.sequelize.sync();
+db.sequelize.sync({ force: true }).then(() => {
+  console.log("Drop and re-sync db.");
+});
 
 app.event('member_joined_channel', async ({ event, client, context }) => {
   try {
@@ -22,6 +30,7 @@ app.event('member_joined_channel', async ({ event, client, context }) => {
       channel: event.channel,
       text: 'hey budy, welcome!'
     });
+    console.log(event.user);
     resolveUser(client, event.user);
   } catch (error){
     console.error(error);

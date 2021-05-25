@@ -4,9 +4,9 @@
   "description": "Node.js server for book directory app with JWT Authentication and PostgreSQL db",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "dev-bot": "nodemon slack-bot.js",
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js",
+    "dev-bot": "nodemon ./src/slack-bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

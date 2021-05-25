@@ -1,5 +1,5 @@
-const { authJwt } = require("../middleware");
-const books = require("../controllers/book");
+const { authJwt } = require("../../middleware");
+const books = require("../../controllers/book");
 const router = require("express").Router();
 
 module.exports = app => {
