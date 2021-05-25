@@ -1,5 +1,5 @@
 const db = require("../models");
-const config = require("../config/auth");
+const { authSecret } = require("../config");
 const User = db.users;
 
 var jwt = require("jsonwebtoken");
@@ -38,7 +38,7 @@ exports.signin = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id }, config.secret, {
+    const token = jwt.sign({ id: user.id }, authSecret, {
       expiresIn: 86400 // 24 hours
     });
 

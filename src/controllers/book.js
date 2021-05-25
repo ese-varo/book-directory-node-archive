@@ -1,7 +1,6 @@
 const db = require("../models");
 const Book = db.books;
 const User = db.users;
-const Op = db.Sequelize.Op;
 
 exports.create = async (req, res) => {
   try {

@@ -1,14 +1,19 @@
 const { App } = require("@slack/bolt");
 const AddBook = require("./slack-bot/modals/AddBook");
 const bcrypt = require("bcryptjs");
+const { slack: {
+  botToken,
+  signinSecret,
+  appToken
+} } = require("./config");
 
 require("dotenv").config();
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  token: botToken,
+  signingSecret: signingSecret,
   socketMode: true,
-  appToken: process.env.APP_TOKEN
+  appToken: appToken
 });
 
 const db = require("./models");

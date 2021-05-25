@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const config = require("../config/auth.js");
+const { authSecret } = require("../config");
 
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
@@ -10,7 +10,7 @@ verifyToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, config.secret, (err, decoded) => {
+  jwt.verify(token, authSecret, (err, decoded) => {
     if (err) {
       return res.status(401).send({
         message: "Unauthorized!"
