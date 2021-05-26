@@ -5,7 +5,7 @@ exports.signup = async (req, res) => {
     const newUser = req.body;
     const { user } = await new AuthService().SignUp(newUser);
 
-    res.send({ message: "User was registered successfully!" });
+    res.status(200).send({ message: "User was registered successfully!" });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }

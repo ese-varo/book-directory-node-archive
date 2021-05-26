@@ -1,4 +1,4 @@
-const db = require("../models");
+const db = require("../database/models");
 const UserModel = db.users;
 const { authSecret } = require("../config");
 

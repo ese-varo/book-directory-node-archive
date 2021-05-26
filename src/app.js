@@ -10,7 +10,7 @@ var corsOptions = {
   origin: "http://localhost:8081"
 };
 
-const db = require("./models");
+const db = require("./database/models");
 
 db.sequelize.sync();
 
