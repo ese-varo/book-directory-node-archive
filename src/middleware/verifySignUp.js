@@ -3,8 +3,9 @@ const User = db.users;
 
 checkDuplicateUsernameOrEmail = async (req, res, next) => {
   try {
+    const { username, email, password } = req.body;
     // Username
-    let user = await User.findOne({ where: { username: req.body.username } });
+    let user = await User.findOne({ where: { username: username } });
     if (user) {
       res.status(400).send({
         message: "Failed! Username is already in use!"
@@ -12,10 +13,17 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
       return;
     }
     // Email
-    user = await User.findOne({ where: { email: req.body.email } });
+    user = await User.findOne({ where: { email: email } });
     if (user) {
       res.status(400).send({
         message: "Failed! Email is already in use!"
+      });
+      return;
+    }
+    // presence of fields
+    if (!username || !password || !email) {
+      res.status(400).send({
+        message: "Failed! All fields are required!"
       });
       return;
     }
